@@ -1,18 +1,13 @@
-#
-# VPC Resources
-#  * VPC
-#  * Subnets
-#  * Internet Gateway
-#  * Route Table
-#
-
 resource "aws_vpc" "demo" {
   cidr_block = "10.0.0.0/16"
 
-  tags = map(
-    "Name", "terraform-eks-demo-node",
-    "kubernetes.io/cluster/${var.cluster-name}", "shared",
-  )
+ enable_dns_support   = true
+  enable_dns_hostnames = true
+
+
+  tags = {
+    Name = "terraform-eks-demo-vpc"
+  }
 }
 
 resource "aws_subnet" "demo" {
@@ -23,17 +18,16 @@ resource "aws_subnet" "demo" {
   vpc_id            = aws_vpc.demo.id
   map_public_ip_on_launch = true
 
-  tags = map(
-    "Name", "terraform-eks-demo-node",
-    "kubernetes.io/cluster/${var.cluster-name}", "shared",
-  )
+  tags = {
+    Name = "terraform-eks-demo-subnet-${count.index}"
+  }
 }
 
 resource "aws_internet_gateway" "demo" {
   vpc_id = aws_vpc.demo.id
 
   tags = {
-    Name = "terraform-eks-demo"
+    Name = "terraform-eks-demo-igw"
   }
 }
 
@@ -52,3 +46,14 @@ resource "aws_route_table_association" "demo" {
   subnet_id      = aws_subnet.demo.*.id[count.index]
   route_table_id = aws_route_table.demo.id
 }
+
+resource "aws_vpc_dhcp_options" "demo" {
+  domain_name_servers  = ["AmazonProvidedDNS"]  # Use AmazonProvidedDNS for AWS-provided DNS resolution
+}
+
+# Associate the DHCP options set with your VPC
+resource "aws_vpc_dhcp_options_association" "demo" {
+  vpc_id          = aws_vpc.demo.id
+  dhcp_options_id = aws_vpc_dhcp_options.demo.id
+}
+

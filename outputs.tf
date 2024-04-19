@@ -4,5 +4,6 @@ output "RDS_instance_ip_addr" {
 }
 
 output "Hostname" {
-  value = kubernetes_service.wpService.load_balancer_ingress.0.hostname
+  value = kubernetes_service.wpService.status.0.load_balancer.0.ingress.0.hostname
 }
+

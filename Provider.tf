@@ -1,7 +1,10 @@
-provider "aws" {
-  region                  = var.region
-  shared_credentials_file = "C:/Users/CyberGOD/.aws/credentials"
-  version = ">= 2.38.0"
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
 }
 
 data "aws_region" "current" {}
@@ -9,4 +12,7 @@ data "aws_region" "current" {}
 data "aws_availability_zones" "available" {}
 
 provider "http" {}
-provider "kubernetes" {}
+
+provider "kubernetes" {
+  config_path = "~/.kube/config"
+}
